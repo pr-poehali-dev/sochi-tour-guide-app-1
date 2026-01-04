@@ -21,6 +21,8 @@ interface Attraction {
   category: string;
   description: string;
   icon: string;
+  lat: number;
+  lng: number;
 }
 
 interface Route {
@@ -34,6 +36,7 @@ interface Route {
 const Index = () => {
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAttraction, setSelectedAttraction] = useState<number | null>(null);
 
   const hotels: Hotel[] = [
     { id: 1, name: 'Radisson Blu Paradise Resort & Spa', rating: 4.8, price: 8500, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945', category: 'Люкс' },
@@ -43,12 +46,12 @@ const Index = () => {
   ];
 
   const attractions: Attraction[] = [
-    { id: 1, name: 'Олимпийский парк', category: 'Спорт', description: 'Комплекс олимпийских объектов 2014 года', icon: 'Trophy' },
-    { id: 2, name: 'Роза Хутор', category: 'Горы', description: 'Горнолыжный курорт мирового класса', icon: 'Mountain' },
-    { id: 3, name: 'Дендрарий', category: 'Природа', description: 'Уникальный парк с экзотическими растениями', icon: 'Trees' },
-    { id: 4, name: 'Сочи Парк', category: 'Развлечения', description: 'Крупнейший тематический парк России', icon: 'Sparkles' },
-    { id: 5, name: 'Агурские водопады', category: 'Природа', description: 'Живописные водопады в ущелье', icon: 'Waves' },
-    { id: 6, name: 'Skypark AJ Hackett', category: 'Экстрим', description: 'Парк приключений с самым длинным мостом', icon: 'Zap' },
+    { id: 1, name: 'Олимпийский парк', category: 'Спорт', description: 'Комплекс олимпийских объектов 2014 года', icon: 'Trophy', lat: 43.4028, lng: 39.9559 },
+    { id: 2, name: 'Роза Хутор', category: 'Горы', description: 'Горнолыжный курорт мирового класса', icon: 'Mountain', lat: 43.6392, lng: 40.3141 },
+    { id: 3, name: 'Дендрарий', category: 'Природа', description: 'Уникальный парк с экзотическими растениями', icon: 'Trees', lat: 43.5661, lng: 39.7467 },
+    { id: 4, name: 'Сочи Парк', category: 'Развлечения', description: 'Крупнейший тематический парк России', icon: 'Sparkles', lat: 43.4054, lng: 39.9564 },
+    { id: 5, name: 'Агурские водопады', category: 'Природа', description: 'Живописные водопады в ущелье', icon: 'Waves', lat: 43.5515, lng: 39.8259 },
+    { id: 6, name: 'Skypark AJ Hackett', category: 'Экстрим', description: 'Парк приключений с самым длинным мостом', icon: 'Zap', lat: 43.5586, lng: 39.8756 },
   ];
 
   const routes: Route[] = [
@@ -92,9 +95,12 @@ const Index = () => {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm rounded-2xl p-1">
+          <TabsList className="grid w-full grid-cols-5 bg-white/50 backdrop-blur-sm rounded-2xl p-1">
             <TabsTrigger value="discover" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
               <Icon name="Compass" size={18} />
+            </TabsTrigger>
+            <TabsTrigger value="map" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
+              <Icon name="MapPin" size={18} />
             </TabsTrigger>
             <TabsTrigger value="hotels" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
               <Icon name="Hotel" size={18} />
@@ -154,6 +160,150 @@ const Index = () => {
                 ))}
               </div>
             </section>
+          </TabsContent>
+
+          <TabsContent value="map" className="mt-6">
+            <div className="animate-fade-in">
+              <h2 className="text-xl font-bold mb-4">Карта достопримечательностей</h2>
+              
+              <div className="relative w-full h-96 rounded-3xl overflow-hidden mb-4 shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100">
+                  <svg className="w-full h-full" viewBox="0 0 400 400">
+                    <defs>
+                      <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#e0f2fe', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#ede9fe', stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    
+                    <rect width="400" height="400" fill="url(#mapGradient)" />
+                    
+                    <path d="M 50 100 Q 100 50, 150 100 T 250 100" 
+                          stroke="#cbd5e1" strokeWidth="2" fill="none" strokeDasharray="5,5" />
+                    <path d="M 100 200 Q 150 150, 200 200 T 300 200" 
+                          stroke="#cbd5e1" strokeWidth="2" fill="none" strokeDasharray="5,5" />
+                    <path d="M 80 300 L 320 300" 
+                          stroke="#94a3b8" strokeWidth="3" fill="none" />
+                    
+                    <text x="200" y="340" textAnchor="middle" fill="#64748b" fontSize="12" fontWeight="500">
+                      Черноморское побережье
+                    </text>
+                    
+                    {attractions.map((attraction, index) => {
+                      const positions = [
+                        { x: 100, y: 100 },
+                        { x: 300, y: 80 },
+                        { x: 150, y: 180 },
+                        { x: 250, y: 200 },
+                        { x: 180, y: 250 },
+                        { x: 280, y: 260 },
+                      ];
+                      const pos = positions[index] || { x: 200, y: 200 };
+                      const isSelected = selectedAttraction === attraction.id;
+                      
+                      return (
+                        <g key={attraction.id} 
+                           onClick={() => setSelectedAttraction(attraction.id)}
+                           className="cursor-pointer"
+                           style={{ transition: 'all 0.3s' }}>
+                          <circle
+                            cx={pos.x}
+                            cy={pos.y}
+                            r={isSelected ? 28 : 24}
+                            fill={isSelected ? 'url(#pinGradientActive)' : 'url(#pinGradient)'}
+                            className="animate-scale-in"
+                            style={{ 
+                              animationDelay: `${index * 0.1}s`,
+                              filter: isSelected ? 'drop-shadow(0 4px 12px rgba(139, 92, 246, 0.5))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                            }}
+                          />
+                          {isSelected && (
+                            <circle
+                              cx={pos.x}
+                              cy={pos.y}
+                              r={32}
+                              fill="none"
+                              stroke="#8b5cf6"
+                              strokeWidth="2"
+                              opacity="0.5"
+                              className="animate-pulse"
+                            />
+                          )}
+                          <text
+                            x={pos.x}
+                            y={pos.y + 5}
+                            textAnchor="middle"
+                            fill="white"
+                            fontSize={isSelected ? "20" : "18"}
+                            fontWeight="bold"
+                          >
+                            {index + 1}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    
+                    <defs>
+                      <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#0ea5e9', stopOpacity: 1 }} />
+                      </linearGradient>
+                      <linearGradient id="pinGradientActive" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#f97316', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#d946ef', stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                
+                <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg">
+                  <Icon name="Navigation" size={20} className="text-purple-600" />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {attractions.map((attraction, index) => (
+                  <Card
+                    key={attraction.id}
+                    onClick={() => setSelectedAttraction(attraction.id)}
+                    className={`overflow-hidden transition-all duration-300 cursor-pointer animate-fade-in ${
+                      selectedAttraction === attraction.id
+                        ? 'ring-2 ring-purple-500 shadow-xl scale-[1.02]'
+                        : 'hover:shadow-lg hover:scale-[1.01]'
+                    }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                          selectedAttraction === attraction.id
+                            ? 'bg-gradient-to-br from-orange-500 to-pink-500'
+                            : 'bg-gradient-to-br from-purple-500 to-blue-500'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                          <Icon name={attraction.icon as any} size={24} className="text-purple-600" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold mb-1">{attraction.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-1">{attraction.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="secondary" className="text-xs">{attraction.category}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {attraction.lat.toFixed(4)}, {attraction.lng.toFixed(4)}
+                          </span>
+                        </div>
+                      </div>
+                      <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600">
+                        <Icon name="Navigation" size={16} />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="hotels" className="space-y-4 mt-6">
