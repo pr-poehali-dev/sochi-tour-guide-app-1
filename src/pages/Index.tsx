@@ -37,13 +37,25 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAttraction, setSelectedAttraction] = useState<number | null>(null);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000]);
+  const [minRating, setMinRating] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
 
-  const hotels: Hotel[] = [
+  const allHotels: Hotel[] = [
     { id: 1, name: 'Radisson Blu Paradise Resort & Spa', rating: 4.8, price: 8500, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945', category: 'Люкс' },
     { id: 2, name: 'Swissotel Resort Сочи Камелия', rating: 4.7, price: 7200, image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb', category: 'Премиум' },
     { id: 3, name: 'Marins Park Hotel', rating: 4.5, price: 5500, image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4', category: 'Комфорт' },
     { id: 4, name: 'Бархатные Сезоны Сочи', rating: 4.6, price: 6800, image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa', category: 'Премиум' },
+    { id: 5, name: 'Pullman Sochi Centre', rating: 4.9, price: 9800, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b', category: 'Люкс' },
+    { id: 6, name: 'Hyatt Regency Sochi', rating: 4.4, price: 4200, image: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c', category: 'Комфорт' },
   ];
+
+  const hotels = allHotels.filter(hotel => {
+    const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
+    const matchesRating = hotel.rating >= minRating;
+    const matchesCategory = selectedCategory === 'Все' || hotel.category === selectedCategory;
+    return matchesPrice && matchesRating && matchesCategory;
+  });
 
   const attractions: Attraction[] = [
     { id: 1, name: 'Олимпийский парк', category: 'Спорт', description: 'Комплекс олимпийских объектов 2014 года', icon: 'Trophy', lat: 43.4028, lng: 39.9559 },
@@ -308,8 +320,124 @@ const Index = () => {
 
           <TabsContent value="hotels" className="space-y-4 mt-6">
             <div className="animate-slide-up">
-              <h2 className="text-xl font-bold mb-4">Отели Сочи</h2>
-              {hotels.map((hotel, index) => (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Отели Сочи</h2>
+                <Badge variant="secondary" className="text-sm">
+                  {hotels.length} {hotels.length === 1 ? 'отель' : 'отелей'}
+                </Badge>
+              </div>
+
+              <Card className="mb-4 bg-white/80 backdrop-blur-sm border-2 border-purple-200">
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon name="SlidersHorizontal" size={20} className="text-purple-600" />
+                    <h3 className="font-semibold">Фильтры</h3>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium">Цена за ночь</label>
+                      <span className="text-sm text-purple-600 font-semibold">
+                        {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()} ₽
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="15000"
+                        step="500"
+                        value={priceRange[1]}
+                        onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                        className="w-full h-2 bg-gradient-to-r from-purple-200 to-purple-500 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>0 ₽</span>
+                        <span>15 000 ₽</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Минимальный рейтинг</label>
+                    <div className="flex gap-2">
+                      {[0, 4.0, 4.3, 4.5, 4.7].map((rating) => (
+                        <button
+                          key={rating}
+                          onClick={() => setMinRating(rating)}
+                          className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all ${
+                            minRating === rating
+                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {rating === 0 ? 'Все' : `${rating}+`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Категория</label>
+                    <div className="flex gap-2">
+                      {['Все', 'Люкс', 'Премиум', 'Комфорт'].map((category) => (
+                        <button
+                          key={category}
+                          onClick={() => setSelectedCategory(category)}
+                          className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all ${
+                            selectedCategory === category
+                              ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(minRating > 0 || priceRange[1] < 15000 || selectedCategory !== 'Все') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPriceRange([0, 15000]);
+                        setMinRating(0);
+                        setSelectedCategory('Все');
+                      }}
+                      className="w-full"
+                    >
+                      <Icon name="X" size={16} className="mr-2" />
+                      Сбросить фильтры
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
+              {hotels.length === 0 ? (
+                <Card className="p-8">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center mb-4">
+                      <Icon name="Search" size={32} className="text-purple-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Отели не найдены</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Попробуйте изменить параметры фильтров
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setPriceRange([0, 15000]);
+                        setMinRating(0);
+                        setSelectedCategory('Все');
+                      }}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600"
+                    >
+                      Сбросить фильтры
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                hotels.map((hotel, index) => (
                 <Card
                   key={hotel.id}
                   className="overflow-hidden mb-4 hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02] animate-fade-in"
@@ -345,7 +473,8 @@ const Index = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+              ))
+              )}
             </div>
           </TabsContent>
 
